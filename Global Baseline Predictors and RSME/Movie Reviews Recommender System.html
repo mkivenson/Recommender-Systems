@@ -13116,7 +13116,7 @@ div#notebook {
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h1 id="Global-Baseline-Predictors-and-RMSE">Global Baseline Predictors and RMSE<a class="anchor-link" href="#Global-Baseline-Predictors-and-RMSE">&#182;</a></h1><p>The goal of this project is to predict movie ratings with top critic ratings information web scraped Rotten Tomatoes. The predictions will first look at only raw averages across all training dataset users. Then, predictions will be modified to account for “bias” by normalizing across users and across items.</p>
+<h1 id="Global-Baseline-Predictors-and-RMSE">Global Baseline Predictors and RMSE<a class="anchor-link" href="#Global-Baseline-Predictors-and-RMSE">&#182;</a></h1><p>The goal of this project is to predict movie ratings with top critic ratings information web scraped from Rotten Tomatoes. The predictions will first look at only raw averages across all training dataset ratings. Then, predictions will be modified to account for bias by normalizing across users and across items.</p>
 
 </div>
 </div>
@@ -13166,9 +13166,9 @@ div#notebook {
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <h2 id="Procedure">Procedure<a class="anchor-link" href="#Procedure">&#182;</a></h2><ul>
-<li><p>Obtain and Clean Dataset: The dataset used will be web scraped from Rotten Tomatoes top critic reviews. To perform the web scraping, BeautifulSoup will be used to extract reviews from Rotten Tomatoes in json format.</p>
+<li><p>Obtain and Clean Dataset: The dataset used will be web scraped from Rotten Tomatoes top critic reviews.</p>
 </li>
-<li><p>Create User-Item Matrix: Movies that have been reviewed by at least half of top critics will be included in the predictions.</p>
+<li><p>Create User-Item Matrix: Movies that have been reviewed by at least half of the selected critics will be included in the predictions.</p>
 </li>
 <li><p>Train Test Split: Split the remaining reviews between a train and test dataset, using a test size of 20% and stratifying by movie.</p>
 </li>
@@ -13184,7 +13184,12 @@ div#notebook {
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h2 id="Obtain-and-Clean-Dataset">Obtain and Clean Dataset<a class="anchor-link" href="#Obtain-and-Clean-Dataset">&#182;</a></h2><p>Rotten Tomatoes has a paginated list of movie reviews for every critic on their website.The following code chunk creates and executes a function scrape_rotten_tomatoes that accepts a list of critics to include in the model and the number of pages of reviews to scrape. For this dataset, nine top critics have been selected and the first five pages of their reviews have been scraped from Rotten Tomatoes.</p>
+<h2 id="Obtain-and-Clean-Dataset">Obtain and Clean Dataset<a class="anchor-link" href="#Obtain-and-Clean-Dataset">&#182;</a></h2><p>Rotten Tomatoes has a paginated list of movie reviews for every critic on their website. The following code chunk creates and executes a function <code>scrape_rotten_tomatoes</code> that accepts the following variables:</p>
+<ul>
+<li><code>reviewer list</code>: a list of critics to include in the model</li>
+<li><code>pages</code>: the number of pages of reviews to scrape </li>
+</ul>
+<p>For this dataset, nine top critics have been selected and the first five pages of their reviews have been scraped from Rotten Tomatoes.</p>
 
 </div>
 </div>
@@ -13200,15 +13205,15 @@ div#notebook {
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>The function scrape_rotten_tomatoes includes the following steps:</p>
+<p>The function <code>scrape_rotten_tomatoes</code> includes the following steps:</p>
 <ul>
-<li>Create empty pandas dataframe to later append records into</li>
-<li>Use BeautifulSoup to web scrape jso string of movie reviews for each critic and each page</li>
+<li>Create empty pandas dataframe to store scraped records in</li>
+<li>Use BeautifulSoup to web scrape json string of movie reviews for each critic and each page</li>
 <li>Extract relevant items from json string into a pandas dataframe</li>
 <li>Remove reviews with no ratings (some critics only evaluate a movie as rotten or fresh, with no numeric rating)</li>
 <li>Convert any letter ratings into a fractional rating (ex. A+ = 100/100)</li>
 <li>Convert fraction ratings to floats (most critics score movies out of 4, 5, or 10)</li>
-<li>Return the resulting dataframe without duplicates</li>
+<li>Return the resulting dataframe without duplicate records (if over-pagination occurs)</li>
 </ul>
 
 </div>
@@ -13392,7 +13397,7 @@ div#notebook {
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h2 id="Create-User-Item-Matrix">Create User-Item Matrix<a class="anchor-link" href="#Create-User-Item-Matrix">&#182;</a></h2><h3 id="Filter-Results">Filter Results<a class="anchor-link" href="#Filter-Results">&#182;</a></h3><p>To create a more condensed ratings model, we only include movies that at least half of the selected critics have reviewed.</p>
+<h2 id="Create-User-Item-Matrix">Create User-Item Matrix<a class="anchor-link" href="#Create-User-Item-Matrix">&#182;</a></h2><h3 id="Filter-Results">Filter Results<a class="anchor-link" href="#Filter-Results">&#182;</a></h3><p>To create a more condensed ratings model, only include movies that at least half of the selected critics have reviewed.</p>
 
 </div>
 </div>
@@ -14257,7 +14262,7 @@ div#notebook {
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h3 id="Visualize-Reviews">Visualize Reviews<a class="anchor-link" href="#Visualize-Reviews">&#182;</a></h3><p>To preview potential bias in the recommender system, a rating overview by critic can be used. We see from the box plots below that Matthew Lickona is a particularly harsh critic. If a different list of critics is passed into the scrape_rotten_tomatoes function, the box plot will show different results.</p>
+<h3 id="Visualize-Reviews">Visualize Reviews<a class="anchor-link" href="#Visualize-Reviews">&#182;</a></h3><p>To preview potential bias in the recommender system, a rating overview by critic can be created. We see from the box plots below that Matthew Lickona is a particularly harsh critic. If a different list of critics is passed into the <code>scrape_rotten_tomatoes</code> function, the box plot will show different results.</p>
 
 </div>
 </div>
@@ -14454,7 +14459,7 @@ The RMSE using the raw average as the predicted value for test data is 0.21502.
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h3 id="Bias-Calculations">Bias Calculations<a class="anchor-link" href="#Bias-Calculations">&#182;</a></h3><p>To make the predictions more accurate, we take into account movie and critic bias. We saw from the visualization earlier that some critics are harsher than others. Similarly, some movies have better critic reception than others as a whole. By taking critic harshness and movie quality into account, we can make these biases reflected in the predictions.</p>
+<h3 id="Bias-Calculations">Bias Calculations<a class="anchor-link" href="#Bias-Calculations">&#182;</a></h3><p>To make the predictions more accurate, we take into account movie and critic bias. We saw from the visualization earlier that some critics are harsher than others. Similarly, some movies are of better quality than others. By taking critic harshness and movie quality into account, we can make these biases reflected in the predictions.</p>
 
 </div>
 </div>
@@ -14519,9 +14524,7 @@ The RMSE using the raw average as the predicted value for test data is 0.21502.
 <div class="prompt input_prompt">In&nbsp;[66]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">X_train_bias</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
-
-<span class="n">MSE_train_bias</span> <span class="o">=</span> <span class="mi">0</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">MSE_train_bias</span> <span class="o">=</span> <span class="mi">0</span>
 <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">X_train_bias</span><span class="o">.</span><span class="n">predictor</span><span class="p">)):</span>
     <span class="n">MSE_train_bias</span> <span class="o">=</span> <span class="n">MSE_train_bias</span> <span class="o">+</span> <span class="p">((</span><span class="n">X_train_bias</span><span class="o">.</span><span class="n">rating</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="n">X_train_bias</span><span class="o">.</span><span class="n">predictor</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
 <span class="n">RMSE_train_bias</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">MSE_train_bias</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">X_train_bias</span><span class="p">)),</span><span class="mi">5</span><span class="p">)</span>
@@ -14556,9 +14559,7 @@ The RMSE using the raw average as the predicted value for test data is 0.21502.
 <div class="prompt input_prompt">In&nbsp;[67]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">X_test_bias</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
-
-<span class="n">MSE_test_bias</span> <span class="o">=</span> <span class="mi">0</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">MSE_test_bias</span> <span class="o">=</span> <span class="mi">0</span>
 <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">X_test_bias</span><span class="o">.</span><span class="n">predictor</span><span class="p">)):</span>
     <span class="n">MSE_test_bias</span> <span class="o">=</span> <span class="n">MSE_test_bias</span> <span class="o">+</span> <span class="p">((</span><span class="n">X_test_bias</span><span class="o">.</span><span class="n">rating</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="n">X_test_bias</span><span class="o">.</span><span class="n">predictor</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
 <span class="n">RMSE_test_bias</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">MSE_test_bias</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">X_test_bias</span><span class="p">)),</span><span class="mi">5</span><span class="p">)</span>
@@ -14591,7 +14592,7 @@ The RMSE using the raw average as the predicted value for test data is 0.21502.
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h2 id="Summary">Summary<a class="anchor-link" href="#Summary">&#182;</a></h2><p>The prediction accuracy results are summarized below.</p>
+<h2 id="Summary">Summary<a class="anchor-link" href="#Summary">&#182;</a></h2><p>The prediction accuracy results are summarized below. It is evident that taking bias into account will improve prediction accuracy.</p>
 
 </div>
 </div>
@@ -14643,7 +14644,7 @@ The RMSE for the raw mean with bias predictor for the test set is 0.14061
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[69]:</div>
+<div class="prompt input_prompt">In&nbsp;[71]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">16</span><span class="p">,</span> <span class="mi">8</span><span class="p">))</span>
@@ -14701,7 +14702,7 @@ The RMSE for the raw mean with bias predictor for the test set is 0.14061
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[70]:</div>
+<div class="prompt input_prompt">In&nbsp;[72]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">16</span><span class="p">,</span> <span class="mi">8</span><span class="p">))</span>
@@ -14746,6 +14747,20 @@ The RMSE for the raw mean with bias predictor for the test set is 0.14061
 </div>
 </div>
 
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Next-Steps">Next Steps<a class="anchor-link" href="#Next-Steps">&#182;</a></h2><ul>
+<li>Allow user input for <code>reviewer list</code> and <code>pages</code></li>
+<li>Web scrape full list of reviewer names and information from Rotten Tomatoes</li>
+<li>Cluster reviewer by preference for collaborative filtering</li>
+<li>Attempt more advanced methods of determining user-item bias</li>
+<li>Create interactive notebook widget to allow for custom movie recommendations</li>
+</ul>
+
+</div>
+</div>
 </div>
     </div>
   </div>
