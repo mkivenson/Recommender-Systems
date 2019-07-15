@@ -1,0 +1,126 @@
+---
+title: "Career Recommender System"
+author: "Mary Anna Kivenson"
+date: "July 13, 2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r packages, message=FALSE, warning=FALSE}
+library(rvest)
+library(tidyverse)
+library(magrittr)
+library(RCurl)
+library(bigrquery)
+library(stringr)
+```
+
+
+## Function to Scrape Job Postings
+
+```{r get_jobs, include=FALSE}
+get_jobs <- function(job_title){
+  
+  #create empty dataframe containing columns for company, location, summary, link, and description
+  listings <- data.frame(title=character(),
+                 company=character(), 
+                 location=character(), 
+                 summary=character(), 
+                 link=character(), 
+                 description = character(),
+                 stringsAsFactors=FALSE) 
+  listings_all <- data.frame()
+  for (job_title in job_list){
+  #get the first 10 pages of job listings for the inputted job title
+    for (i in seq(0, 100, 10)){
+      url_ds <- paste0('https://www.indeed.com/jobs?q=',job_title,'&l=all&start=',i)
+      var <- read_html(url_ds)
+      
+      #job title
+      title <-  var %>% 
+        html_nodes('#resultsCol .jobtitle') %>%
+        html_text() %>%
+        str_extract("(\\w+.+)+") 
+      
+      #company
+      company <- var %>% 
+        html_nodes('#resultsCol .company') %>%
+        html_text() %>%
+        str_extract("(\\w+).+") 
+      
+      #location
+      location <- var %>%
+        html_nodes('#resultsCol .location') %>%
+        html_text() %>%
+        str_extract("(\\w+.)+,.[A-Z]{2}")   
+      #summary
+      summary <- var %>%
+        html_nodes('#resultsCol .summary') %>%
+        html_text() %>%
+        str_extract(".+")
+      
+      #link
+      link <- var %>%
+        html_nodes('#resultsCol .jobtitle .turnstileLink, #resultsCol a.jobtitle') %>%
+        html_attr('href') 
+      link <- paste0("https://www.indeed.com",link)
+        
+      listings <- rbind(listings, as.data.frame(cbind(title,
+                                                      company,
+                                                      location,
+                                                      summary,
+                                                      link)))
+    }
+    
+    listings_all <- rbind(listings_all, listings)
+  }
+  #remove duplicate links
+  listings_all %<>%
+    distinct(link, .keep_all = TRUE)
+  
+  #obtain full description for all job postings
+  for (i in (1:length(listings_all$link))){
+    desciption <- tryCatch(
+       html_text(html_node(read_html(as.character(listings_all$link[i])),'.jobsearch-jobDescriptionText')),
+       error=function(e){NA}
+    )
+    if (is.null(desciption)){
+      desc <- NA
+    }
+    listings_all$description[i] <- desciption
+  }
+  
+  #remove duplicate descriptions
+  listings_all %<>%
+    distinct(description, .keep_all = TRUE)
+  
+  return(listings_all)
+}
+```
+
+
+```{r get_jobs use}
+job_list <- vector()
+no_jobs <- readline('How many job titles would you like to web scrape?: ')
+for (i in seq(1, no_jobs)){
+  job <- readline('Enter a job title: ') %>%
+    str_replace(pattern = " ", replacement = "+")
+  job_list <- append(job_list, job)}
+
+job_table <- get_jobs(job_list)
+job_table$description = str_replace_all(job_table$description, pattern = "\\n", replacement = " ")
+job_table
+```
+
+
+## Function to Store Job Postings
+```{r store_bigquery}
+store_jobs <- function(datatable = job_table){
+  bq_auth(path = "My First Project-fe78171bdba0.json")
+  insert_upload_job("deep-rigging-245523", "Projects", "job_listings", datatable, create_disposition = "CREATE_IF_NEEDED")  
+}
+store_jobs()
+```
