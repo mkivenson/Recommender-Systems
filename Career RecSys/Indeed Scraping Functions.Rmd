@@ -35,8 +35,8 @@ get_jobs <- function(job_title){
                  stringsAsFactors=FALSE) 
   listings_all <- data.frame()
   for (job_title in job_list){
-  #get the first 10 pages of job listings for the inputted job title
-    for (i in seq(0, 100, 10)){
+  #get the first 3 pages of job listings for the inputted job title
+    for (i in seq(0, 30, 10)){
       url_ds <- paste0('https://www.indeed.com/jobs?q=',job_title,'&l=all&start=',i)
       var <- read_html(url_ds)
       
@@ -110,6 +110,7 @@ This code junk creates a list of tech-related jobs in `job_list`. This list is t
 job_list <- list('Data+Scientist', 'Data+Analyst', 'Business+Analyst', 'Computer+Scientist', 'Software+Engineer', 'Systems+Analyst', 'Web+Developer', 'Database+Administrator', 'Programmer', 'SEO+Consultant', 'Digital+Marketing', 'UX+Designer', 'UI+Designer', 'Front+End+Developer', 'Data+Architect', 'Data+Engineer', 'Quality+Assurance+Analyst', 'Statistician', 'Software+Tester', 'Product+Analyst', 'IT+Support', 'Game+Developer', 'CRM+Analyst', 'Network+Engineer', 'Data+Modeler')
 job_table <- get_jobs(job_list)
 job_table$description = str_replace_all(job_table$description, pattern = "\\n", replacement = " ")
+job_table$insert_date <- as.Date(Sys.time(), tz = "UTC")
 head(job_table)
 ```
 
@@ -119,8 +120,8 @@ head(job_table)
 This function stores the previous dataframe into a Google BigQuery datatable.
 ```{r store_bigquery, eval=FALSE, include=TRUE}
 store_jobs <- function(datatable = job_table){
-  bq_auth(path = "My First Project-fe78171bdba0.json")
-  insert_upload_job("deep-rigging-245523", "Projects", "job_listings", datatable, create_disposition = "CREATE_IF_NEEDED")  
+  bq_auth(path = "deep-rigging-245523-13178f463b29.json")
+  bq_perform_upload("deep-rigging-245523", "Projects", "job_listings", datatable, create_disposition = "CREATE_IF_NEEDED")  
 }
 store_jobs()
 ```
